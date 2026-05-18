@@ -183,8 +183,10 @@ class WhatsAppBlastApp:
                         if invalid_message:
                             # Close the invalid-number popup if present
                             close_button_xpath = (
-                                '//button[normalize-space(text())="OK" or normalize-space(text())="Ok" or '
-                                'normalize-space(text())="CLOSE" or normalize-space(text())="Close"] | '
+                                '//button[normalize-space(.)="OK" or .//span[normalize-space(.)="OK"] '
+                                'or normalize-space(.)="Ok" or .//span[normalize-space(.)="Ok"] '
+                                'or normalize-space(.)="CLOSE" or normalize-space(.)="Close" '
+                                'or .//span[normalize-space(.)="Close"]] | '
                                 '//*[@role="button" and (contains(@aria-label, "Close") or contains(@aria-label, "close"))]'
                             )
                             close_buttons = driver.find_elements(By.XPATH, close_button_xpath)
