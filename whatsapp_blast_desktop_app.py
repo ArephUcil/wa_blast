@@ -12,6 +12,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 
 class WhatsAppBlastApp:
@@ -165,9 +166,24 @@ class WhatsAppBlastApp:
 
                     # Try more robust selectors for the send button
                     # WhatsApp Web updates frequently, so this XPath might need adjustments
-                    send_button = wait.until(
-                        EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Send"] | //span[@data-testid="send"]'))
-                    )
+                    try:
+                        send_button = wait.until(
+                            EC.element_to_be_clickable((By.XPATH, '//button[@aria-label="Send"] | //span[@data-testid="send"]'))
+                        )
+                    except TimeoutException:
+                        # WhatsApp shows an invalid-number message when the contact isn't on WhatsApp
+                        invalid_selector = (
+                            '//*[contains(text(), "Phone number shared via url is invalid") '
+                            'or contains(text(), "Phone number shared via URL is invalid") '
+                            'or contains(text(), "phone number is not on WhatsApp") '
+                            'or contains(text(), "not on WhatsApp")]'
+                        )
+                        invalid_message = driver.find_elements(By.XPATH, invalid_selector)
+                        if invalid_message:
+                            print(f"WhatsApp number not found for {name} ({phone}). Skipping.")
+                            continue
+                        raise
+
                     time.sleep(2)
                     send_button.click()
 
