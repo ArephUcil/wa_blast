@@ -175,11 +175,31 @@ class WhatsAppBlastApp:
                         invalid_selector = (
                             '//*[contains(text(), "Phone number shared via url is invalid") '
                             'or contains(text(), "Phone number shared via URL is invalid") '
-                            'or contains(text(), "phone number is not on WhatsApp") '
+                            'or contains(text(), "is not on WhatsApp") '
+                            'or contains(text(), "isn\'t on WhatsApp") '
                             'or contains(text(), "not on WhatsApp")]'
                         )
                         invalid_message = driver.find_elements(By.XPATH, invalid_selector)
                         if invalid_message:
+                            # Close the invalid-number popup if present
+                            close_button_xpath = (
+                                '//button[normalize-space(text())="OK" or normalize-space(text())="Ok" or '
+                                'normalize-space(text())="CLOSE" or normalize-space(text())="Close"] | '
+                                '//*[@role="button" and (contains(@aria-label, "Close") or contains(@aria-label, "close"))]'
+                            )
+                            close_buttons = driver.find_elements(By.XPATH, close_button_xpath)
+                            for btn in close_buttons:
+                                try:
+                                    btn.click()
+                                    break
+                                except Exception:
+                                    continue
+                            else:
+                                try:
+                                    driver.find_element(By.TAG_NAME, "body").send_keys(Keys.ESCAPE)
+                                except Exception:
+                                    pass
+
                             print(f"WhatsApp number not found for {name} ({phone}). Skipping.")
                             continue
                         raise
